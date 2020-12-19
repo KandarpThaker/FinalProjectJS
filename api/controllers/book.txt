@@ -1,0 +1,67 @@
+const Book = require('../models/book');
+const jwt = require('jsonwebtoken');
+
+exports.index = async (req, res, next) => {
+    try{
+    const books = await Book.find();
+    res.status(200).json(books);
+    }
+    catch(error){
+      next(error);
+    }
+  };
+  
+exports.show = async (req, res, next) => {
+    try {
+        const { _id } = req.params;
+        const book = await Book.findById({ _id });
+        res.status(200).json(book);
+    } catch (error) {
+        // console.error(error);
+        next(error);
+    }
+};
+exports.create = async (req, res, next) => {
+    console.log(req.body);
+    try {
+        const { bookName, bookAuthor, bookReleaseDate } = req.body;
+        
+        const bk = await Book.create({
+            bookName,
+            bookAuthor,
+            bookReleaseDate,
+        });
+        res.status(200).json({book: bk});
+    }
+    catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+exports.update = async (req, res, next) => {
+    try {
+        const { _id, bookName, bookAuthor, bookReleaseDate } = req.body;
+        console.log(req.body);
+        const bk = await Book.findOneAndUpdate({ _id }, {
+            bookName,
+            bookAuthor,
+            bookReleaseDate,
+        });
+        res.status(200).json({book: bk});
+        const body = { _id: bk._id, name: bookName };
+        const token = jwt.sign({ user: body }, 'any salty secret here');
+        res.status(200).json({ token });
+    } catch (error) {
+        next(error);
+    }
+}
+exports.destroy = async (req, res, next) => {
+    try {
+        const { _id } = req.body;
+        console.log(req.body);
+        const bk = await Book.findOneAndDelete({ _id });
+        res.status(200).json(bk);
+    } catch (error) {
+        next(error);
+    }
+}
